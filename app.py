@@ -5,7 +5,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 st.set_page_config(page_title="Iz Chat Companion", page_icon="🤖")
 st.title("Iz Chat Companion 🤖")
 
-# Chargement du modèle principal (iz-instruct)
+# Chargement du modèle principal (iz-instruct) sur CPU
 @st.cache_resource
 def load_model():
     model_id = "theplayboy117/iz-instruct"
@@ -13,7 +13,7 @@ def load_model():
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
         torch_dtype=torch.float32,
-        device_map="auto"
+        low_cpu_mem_usage=True
     )
     return tokenizer, model
 
@@ -39,7 +39,7 @@ if prompt := st.chat_input("Pose une question à Iz..."):
         full_prompt += f"<|im_start|>{m['role']}\n{m['content']}<|im_end|>\n"
     full_prompt += "<|im_start|>assistant\n"
 
-    inputs = tokenizer(full_prompt, return_tensors="pt").to(model.device)
+    inputs = tokenizer(full_prompt, return_tensors="pt")
 
     with st.spinner("Iz réfléchit..."):
         with torch.no_grad():
@@ -57,4 +57,3 @@ if prompt := st.chat_input("Pose une question à Iz..."):
     with st.chat_message("assistant"):
         st.markdown(response)
     st.session_state.messages.append({"role": "assistant", "content": response})
-          
